@@ -13,7 +13,7 @@ class vehicle:
     def set_line(self, line:str) -> None:
         self.line = line
     def get_value(self) -> int:
-        return self.value
+        return float(self.value)
     def get_line(self) -> str:
         return self.line
     def get_type_of_vehicle(self) -> str:
