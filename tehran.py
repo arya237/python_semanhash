@@ -1,12 +1,25 @@
 from collections import defaultdict as mymap
 from vehicle import vehicle
 
+class node:
+    value = 0
+    direction = ""
+    type_vehicle = ""
+
 class Tehran:
 
     def __init__(self) -> None:
         self.graph = mymap(lambda: mymap(list))
         self.read_from_file()
-        
+
+    def find_minimum(self, list: mymap, visited) -> str:
+        min = float('inf')
+        for _ in list:
+            if _.value < min:
+                return _.get 
+            
+
+
     def read_from_file(self) -> None:
         start = ""
         destination = ""
@@ -45,6 +58,14 @@ class Tehran:
                 
                 self.graph[start][destination].append(Vehicle1)
                 self.graph[destination][start].append(Vehicle1)
+        
+        def find_shortest_path(start: str, destiny: str) -> None:
+            visited: list[str] = []
+            pathes = mymap(lambda: node())
+
+            for i in range(0, len(self.graph)):
+                min = 
+
 
 
 
@@ -54,12 +75,12 @@ tehran = Tehran()
 
 # print(*d.items())
 
-for i in tehran.graph:
-    print(i, end=" -> ")
-    for j in tehran.graph[i]:
-        print(j, end=": ")
-        for vec in tehran.graph[i][j]:
-            print(vec.get_type_of_vehicle(), end=' ')
+# for i in tehran.graph:
+#     print(i, end=" -> ")
+#     for j in tehran.graph[i]:
+#         print(j, end=": ")
+#         for vec in tehran.graph[i][j]:
+#             print(vec.get_type_of_vehicle(), end=' ')
 
 
             

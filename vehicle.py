@@ -1,7 +1,7 @@
 import sys
 
 class vehicle:
-    def __init__(self, value:int = sys.maxsize, name:str = "", line:str = "") -> None:
+    def __init__(self, value:int = 0, name:str = "", line:str = "") -> None:
         self.set_name_of_vehicle(name)
         self.set_line(line)
         self.set_value(value)
