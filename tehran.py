@@ -1,11 +1,13 @@
 from collections import defaultdict as mymap
 from vehicle import vehicle
+from copy import copy
 
 
 class node:
     value = float('inf')
     direction = []
     type_vehicle = []
+    line = []
 
 class mylist(list[vehicle]):
 
@@ -16,6 +18,18 @@ class mylist(list[vehicle]):
             if i.get_value() < minimum.get_value():
                 minimum = i
         return minimum
+    
+    def calc_price(self, vehicle: str, flag: bool) -> int:
+        if flag == 1:
+            if vehicle == 'metro':
+                return 3267
+            elif vehicle == 'taxi':
+                return 6000
+            elif vehicle == 'bus':
+                return 2250
+        else: return 0
+
+
 
 
 class Tehran:
@@ -23,6 +37,7 @@ class Tehran:
     def __init__(self) -> None:
         self.graph = mymap(lambda: mymap(mylist))
         self.lines = mymap(list[str])
+        self.station_info = mymap(lambda: mymap(mylist[str]))
         self.read_from_file()
         
 
@@ -40,6 +55,7 @@ class Tehran:
         destination = ""
         line = ""
         value: int
+        flag: bool = 1
 
         file = open("taxi_bus_distance.txt", "r")
         
@@ -47,20 +63,42 @@ class Tehran:
 
         while True:
             start = file.readline().rstrip('\n')
+            
+            if flag:
+                self.lines[line].append(start)
+        
+                flag = 0
+                if line[0] == "M":
+                    self.station_info[start][line].append("metro")
+                    self.station_info[start][line].append("taxi")
+                elif line[0] == "B":
+                    self.station_info[start][line].append("bus")
 
             if start == 'end*':
                 break
 
             if start == 'end':
-               line = file.readline().strip('\n')
-               start = file.readline().rstrip('\n')
+                line = file.readline().strip('\n')
+                start = file.readline().rstrip('\n')
+
+                if line[0] == "M":
+                    self.station_info[start][line].append("metro")
+                    self.station_info[start][line].append("taxi")
+                elif line[0] == "B":
+                    self.station_info[start][line].append("bus")
+
+                self.lines[line].append(start)
 
             destination = file.readline().rstrip('\n')
             value = file.readline().rstrip('\n')
+            self.lines[line].append(destination)
 
             if line[0] == 'M':
                 Vehicle1 = vehicle(value, "metro", line)
                 Vehicle2 = vehicle(value, "taxi", line)
+
+                self.station_info[destination][line].append("metro")
+                self.station_info[destination][line].append("taxi")
 
                 self.graph[start][destination].append(Vehicle1)
                 self.graph[start][destination].append(Vehicle2)
@@ -71,6 +109,7 @@ class Tehran:
             elif line[0] == "B":
                 Vehicle1 = vehicle(value, 'Bus', line)
                 
+                self.station_info[destination][line].append("bus")
                 self.graph[start][destination].append(Vehicle1)
                 self.graph[destination][start].append(Vehicle1)
         
@@ -102,29 +141,79 @@ class Tehran:
 
         for i in range(1, len(pathes[destiny].direction)):
             print(" ( " ,pathes[destiny].type_vehicle[i - 1], " ) ", pathes[destiny].direction[i], end=" -> ")
+
+    def find_best_cost(self, src: str, destiny: str):
+        pathes = mymap(lambda: node())
+        visited = []
+
+        pathes[src].value = 0
+
+        for i in range(0, len(self.graph)):
+            min = self.find_minimum(pathes, visited)
+            # print(min)
+            self.set_price_in_station(self.station_info[min], min, pathes, visited)
+            visited.append(min)
+        
+        print(pathes[destiny].value)
+
+    def set_price_in_station(self, vehicles: mymap, src, list: mymap[str, node], visited):
+        
+        for line, value in vehicles.items():
+            for Vehicle in value:
+                
+                print("src: ",src, 'line: ', line, ' vehicle: ', Vehicle, " " ,"value: ", list[src].value)
+                index_src = self.lines[line].index(src)
+                resault: node = copy(list[src])
+                flag: bool = 1
+
+                for i in range(index_src, len(self.lines[line]) - 1):
                     
-                      
+                    if src == self.lines[line][i]:
+                        
+                        if len(list[src].type_vehicle) == 0:
+                            flag = 1
+                        elif list[src].type_vehicle[-1] != Vehicle:
+                            flag = 1
+                        elif list[src].line[-1] != line:
+                            flag = 1
+                    
+                    resault.value += self.graph[self.lines[line][i]][self.lines[line][i + 1]].calc_price(Vehicle, flag)
+                    flag = 0
 
+                    if list[self.lines[line][i + 1]].value >= resault.value:
+                        list[self.lines[line][i + 1]] = copy(resault)
+                        print("in if: ",self.lines[line][i + 1], " -> ", list[self.lines[line][i + 1]].value)
+                        
+            
+                resault: node = copy(list[src])
+                print("resault: ", list[src].value)
+                flag: bool = 1 
 
+                for i in range(index_src, 0, -1):
+                    if list[self.lines[line][i - 1]] not in visited:
+                        
+                        if src == self.lines[line][i]:
+                        
+                            if len(list[src].type_vehicle) == 0:
+                                flag = 1
+                            elif list[src].type_vehicle[-1] != Vehicle:
+                                flag = 1
+                            elif list[src].line[-1] != line:
+                                flag = 1
 
+                    resault.value += self.graph[self.lines[line][i]][self.lines[line][i - 1]].calc_price(Vehicle, flag)
+                    flag = 0
 
+                    if list[self.lines[line][i - 1]].value >= resault.value:
+                        list[self.lines[line][i - 1]] = copy(resault)
+                        
 
 
 tehran = Tehran()
 src = input()
 destiny = input()
-tehran.find_shortest_path(src, destiny)
+tehran.find_best_cost(src, destiny)
 
-# d = {'A': 1, "B":2, "C":3}
-
-# print(*d.items())
-
-# for i in tehran.graph:
-#     print(i, end=" -> ")
-#     for j in tehran.graph[i]:
-#         print(j, end=": ")
-#         for vec in tehran.graph[i][j]:
-#             print(vec.get_type_of_vehicle(), end=' ')
 
 
             
