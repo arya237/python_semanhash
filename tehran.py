@@ -31,8 +31,28 @@ class mylist(list[vehicle]):
         else: return 0
     
     def calc_time(self, vehicle: str, flag: bool, time: Time):
-        if vehicle == "taxi" and flag == 1:
+        t = 2  if  18 < time.get_hour() < 20 else 1
+        m = 24 if  6  < time.get_hour() < 8  else 8
+        b = 2  if  6  < time.get_hour() < 8  else 1
+       
+        if vehicle == "taxi" and flag == 0:
             return self.get_min(vehicle).get_value()
+        
+        elif vehicle == "taxi" and flag == 1:
+            return self.get_min(vehicle) *(2*t)
+        
+        elif vehicle == "metro" and flag == 0:
+            return self.get_min(vehicle)
+        
+        elif vehicle == "metro" and flag == 1:
+            return self.get_min(vehicle) + m
+        
+        elif vehicle == "bus" and flag == 0:
+            return self.get_min(vehicle) * (4*b)
+        
+        elif vehicle == "bus" and flag == 1:
+            return self.get_min(vehicle) * (4*b) + (15*b)
+        
 
 
 
@@ -237,23 +257,80 @@ class Tehran:
                         list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
                         list[self.lines[line][i - 1]].line = copy(resault.line)
     
-    def set_time_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited):
+    def find_best_cost()
+    
+    def set_time_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited, start_time: Time):
         
         for line, value in vehicles.items():
             for Vehicle in value:
 
-                result = node()
-                result.value = copy(list[src].value)
-                result.direction = copy(list[src].direction)
-                result.type_vehicle = copy(list[src].type_vehicle)
-                result.line = copy(list[src].line)
+                resault = node()
+                resault.value = copy(list[src].value)
+                resault.direction = copy(list[src].direction)
+                resault.type_vehicle = copy(list[src].type_vehicle)
+                resault.line = copy(list[src].line)
+                
                 flag: bool = 1
-
                 src_index = self.lines[line].index(src)
 
                 for i in range(src_index, len(self.lines[line]) - 1):
+                    
+                    if src == self.lines[line][i]:
+                        
+                        if len(list[src].type_vehicle) == 0:
+                            flag = 1
+                        elif list[src].type_vehicle[-1] != Vehicle:
+                            flag = 1
+                        elif list[src].line[-1] != line:
+                            flag = 1
 
-                    result.value = self.graph[line]
+                    temp = Time(start_time)
+                    temp.__add__(resault.value) 
+                    resault.value += self.graph[self.lines[line][i]][self.lines[line][i + 1]].calc_time(Vehicle, flag, temp)
+                    resault.direction.append(self.lines[line][i + 1])
+                    resault.type_vehicle.append(Vehicle)
+                    resault.line.append(line)
+                    flag = 0
+
+                    if list[self.lines[line][i - 1]].value >= resault.value:
+                        list[self.lines[line][i - 1]].value = copy(resault.value)
+                        list[self.lines[line][i - 1]].direction = copy(resault.direction)
+                        list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
+                        list[self.lines[line][i - 1]].line = copy(resault.line)
+
+
+                resault.value = copy(list[src].value)
+                resault.direction = copy(list[src].direction)
+                resault.type_vehicle = copy(list[src].type_vehicle)
+                resault.line = copy(list[src].line)
+                flag: bool = 1 
+
+                for i in range(src_index, 0, -1):
+                    if list[self.lines[line][i - 1]] not in visited:
+                        
+                        if src == self.lines[line][i]:
+                        
+                            if len(list[src].type_vehicle) == 0:
+                                flag = 1
+                            elif list[src].type_vehicle[-1] != Vehicle:
+                                flag = 1
+                            elif list[src].line[-1] != line:
+                                flag = 1
+
+                    temp = Time()
+                    temp.__add__(resault.value)
+                    resault.value += self.graph[self.lines[line][i]][self.lines[line][i - 1]].calc_price(Vehicle, flag, temp)
+                    resault.direction.append(self.lines[line][i - 1])
+                    resault.type_vehicle.append(Vehicle)
+                    resault.line.append(line)
+                    flag = 0
+
+                    if list[self.lines[line][i - 1]].value >= resault.value:
+                        list[self.lines[line][i - 1]].value = copy(resault.value)
+                        list[self.lines[line][i - 1]].direction = copy(resault.direction)
+                        list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
+                        list[self.lines[line][i - 1]].line = copy(resault.line)
+                    
 
 
 
