@@ -1,6 +1,7 @@
 from collections import defaultdict as mymap
 from vehicle import vehicle
-from copy import copy
+from copy import copy, deepcopy
+from mytime import Time
 
 
 class node:
@@ -28,6 +29,11 @@ class mylist(list[vehicle]):
             elif vehicle == 'bus':
                 return 2250
         else: return 0
+    
+    def calc_time(self, vehicle: str, flag: bool, time: Time):
+        if vehicle == "taxi" and flag == 1:
+            return self.get_min(vehicle).get_value()
+
 
 
 
@@ -142,28 +148,40 @@ class Tehran:
         for i in range(1, len(pathes[destiny].direction)):
             print(" ( " ,pathes[destiny].type_vehicle[i - 1], " ) ", pathes[destiny].direction[i], end=" -> ")
 
+    
     def find_best_cost(self, src: str, destiny: str):
         pathes = mymap(lambda: node())
         visited = []
 
         pathes[src].value = 0
+        pathes[src].direction.append(src)
 
         for i in range(0, len(self.graph)):
             min = self.find_minimum(pathes, visited)
-            # print(min)
-            self.set_price_in_station(self.station_info[min], min, pathes, visited)
+            self.set_price_in_stations(self.station_info[min], min, pathes, visited)
             visited.append(min)
         
         print(pathes[destiny].value)
+        print(pathes[destiny].direction[0], end=' -> ')
 
-    def set_price_in_station(self, vehicles: mymap, src, list: mymap[str, node], visited):
+        for i in range(1, len(pathes[destiny].direction)):
+            print('(',pathes[destiny].type_vehicle[i - 1], ')', pathes[destiny].direction[i], end=' -> ')
+        
+
+    
+    def set_price_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited):
         
         for line, value in vehicles.items():
             for Vehicle in value:
                 
-                print("src: ",src, 'line: ', line, ' vehicle: ', Vehicle, " " ,"value: ", list[src].value)
                 index_src = self.lines[line].index(src)
-                resault: node = copy(list[src])
+                
+                resault = node()
+                resault.value = copy(list[src].value)
+                resault.direction = copy(list[src].direction)
+                resault.type_vehicle = copy(list[src].type_vehicle)
+                resault.line = copy(list[src].line)
+
                 flag: bool = 1
 
                 for i in range(index_src, len(self.lines[line]) - 1):
@@ -178,15 +196,21 @@ class Tehran:
                             flag = 1
                     
                     resault.value += self.graph[self.lines[line][i]][self.lines[line][i + 1]].calc_price(Vehicle, flag)
+                    resault.direction.append(self.lines[line][i + 1])
+                    resault.type_vehicle.append(Vehicle)
+                    resault.line.append(line)
                     flag = 0
 
                     if list[self.lines[line][i + 1]].value >= resault.value:
-                        list[self.lines[line][i + 1]] = copy(resault)
-                        print("in if: ",self.lines[line][i + 1], " -> ", list[self.lines[line][i + 1]].value)
-                        
-            
-                resault: node = copy(list[src])
-                print("resault: ", list[src].value)
+                        list[self.lines[line][i + 1]].value = copy(resault.value)
+                        list[self.lines[line][i + 1]].direction = copy(resault.direction)
+                        list[self.lines[line][i + 1]].type_vehicle = copy(resault.type_vehicle)
+                        list[self.lines[line][i + 1]].line = copy(resault.line)
+                
+                resault.value = copy(list[src].value)
+                resault.direction = copy(list[src].direction)
+                resault.type_vehicle = copy(list[src].type_vehicle)
+                resault.line = copy(list[src].line)
                 flag: bool = 1 
 
                 for i in range(index_src, 0, -1):
@@ -202,13 +226,38 @@ class Tehran:
                                 flag = 1
 
                     resault.value += self.graph[self.lines[line][i]][self.lines[line][i - 1]].calc_price(Vehicle, flag)
+                    resault.direction.append(self.lines[line][i - 1])
+                    resault.type_vehicle.append(Vehicle)
+                    resault.line.append(line)
                     flag = 0
 
                     if list[self.lines[line][i - 1]].value >= resault.value:
-                        list[self.lines[line][i - 1]] = copy(resault)
+                        list[self.lines[line][i - 1]].value = copy(resault.value)
+                        list[self.lines[line][i - 1]].direction = copy(resault.direction)
+                        list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
+                        list[self.lines[line][i - 1]].line = copy(resault.line)
+    
+    def set_time_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited):
+        
+        for line, value in vehicles.items():
+            for Vehicle in value:
+
+                result = node()
+                result.value = copy(list[src].value)
+                result.direction = copy(list[src].direction)
+                result.type_vehicle = copy(list[src].type_vehicle)
+                result.line = copy(list[src].line)
+                flag: bool = 1
+
+                src_index = self.lines[line].index(src)
+
+                for i in range(src_index, len(self.lines[line]) - 1):
+
+                    result.value = self.graph[line]
+
+
+
                         
-
-
 tehran = Tehran()
 src = input()
 destiny = input()
