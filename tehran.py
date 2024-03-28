@@ -41,6 +41,7 @@ class mylist(list[vehicle]):
         t = 2  if  18 < time.get_hour() < 20 else 1
         m = 24 if  6  < time.get_hour() < 8  else 8
         b = 2  if  6  < time.get_hour() < 8  else 1
+
        
         if vehicle == "taxi" and flag == 0:
             # print(self.get_min(vehicle).get_type_of_vehicle())
@@ -273,13 +274,12 @@ class Tehran:
                         list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
                         list[self.lines[line][i - 1]].line = copy(resault.line)
     
-    def find_best_time(self, src, destiny):
+    def find_best_time(self, src, destiny, start_time: Time):
         pathes = mymap(lambda: node())
         visited = []
         
         pathes[src].value = 0
-        pathes[src].direction.append(src)
-        time = Time("10:00")
+        time = copy(start_time)
 
         for i in range(0, len(self.graph)):
             min = self.find_minimum(pathes, visited)
@@ -287,6 +287,13 @@ class Tehran:
             visited.append(min)
         
         print(pathes[destiny].value)
+        time + pathes[destiny].value
+        time.print()
+        print(pathes[destiny].direction[0], end=' -> ')
+
+        for i in range(1, len(pathes[destiny].direction)):
+            print('(',pathes[destiny].type_vehicle[i - 1], ')', pathes[destiny].direction[i], end=' -> ')
+
     
     def set_time_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited, start_time: Time) -> None:
         
@@ -393,17 +400,9 @@ start_time = Time(input())
 tehran.find_shortest_path(src, destiny, start_time)
 print("\n*************\n")
 tehran.find_best_cost(src, destiny, start_time)
-# print("\n*************\n")
-# tehran.find_best_time(src, destiny, start_time)
-# print(tehran.graph["Mirdamad"]["Meydan-e Hazrat-e ValiAsr"].get_min())
-                        
-# def func(a, b):
-#     print(a+b+c)
+print("\n*************\n")
+tehran.find_best_time(src, destiny, start_time)
 
-# def func(a, b, c):
-#     print(a, b, c)
-
-# func(2,3)
 
 
 
