@@ -1,7 +1,7 @@
 class Time:
     def __init__(self, time: str) -> None:
-        self.hour = time[0:2]
-        self.min = time[2:4]
+        self.hour = int(time[0:2])
+        self.min = int(time[3:5])
     
     def get_hour(self) -> int:
         return self.hour
@@ -17,5 +17,4 @@ class Time:
     def print(self) -> None:
         print(self.hour, ":" , self.min)
 
-
-        
+   

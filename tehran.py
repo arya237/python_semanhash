@@ -20,6 +20,13 @@ class mylist(list[vehicle]):
                 minimum = i
         return minimum
     
+    def get_vic(self, vehicle: str) -> vehicle:
+        # print(vehicle, end=': ')
+        for i in self:
+            if i.get_type_of_vehicle() == vehicle:
+                # print("finded")
+                return i
+    
     def calc_price(self, vehicle: str, flag: bool) -> int:
         if flag == 1:
             if vehicle == 'metro':
@@ -36,22 +43,28 @@ class mylist(list[vehicle]):
         b = 2  if  6  < time.get_hour() < 8  else 1
        
         if vehicle == "taxi" and flag == 0:
-            return self.get_min(vehicle).get_value()
+            # print(self.get_min(vehicle).get_type_of_vehicle())
+            return self.get_vic(vehicle).get_value() * (2*t)
         
         elif vehicle == "taxi" and flag == 1:
-            return self.get_min(vehicle) *(2*t)
+            # print(self.get_vic(vehicle).get_type_of_vehicle())
+            return self.get_vic(vehicle).get_value() *(2*t) + (5*t)
         
         elif vehicle == "metro" and flag == 0:
-            return self.get_min(vehicle)
+            # print(self.get_vic(vehicle).get_type_of_vehicle())
+            return self.get_vic(vehicle).get_value()
         
         elif vehicle == "metro" and flag == 1:
-            return self.get_min(vehicle) + m
+            # print(self.get_vic(vehicle).get_type_of_vehicle())
+            return self.get_vic(vehicle).get_value() + m
         
         elif vehicle == "bus" and flag == 0:
-            return self.get_min(vehicle) * (4*b)
+            # print(self.get_vic(vehicle).get_type_of_vehicle())
+            return self.get_vic(vehicle).get_value() * (4*b)
         
         elif vehicle == "bus" and flag == 1:
-            return self.get_min(vehicle) * (4*b) + (15*b)
+            # print(self.get_vic(vehicle).get_type_of_vehicle())
+            return self.get_vic(vehicle).get_value() * (4*b) + (15*b)
         
 
 
@@ -133,7 +146,7 @@ class Tehran:
                 self.graph[destination][start].append(Vehicle2)
             
             elif line[0] == "B":
-                Vehicle1 = vehicle(value, 'Bus', line)
+                Vehicle1 = vehicle(value, 'bus', line)
                 
                 self.station_info[destination][line].append("bus")
                 self.graph[start][destination].append(Vehicle1)
@@ -160,9 +173,12 @@ class Tehran:
                     pathes[key].direction.append(key)
                     pathes[key].type_vehicle = pathes[min_state].type_vehicle.copy()
                     pathes[key].type_vehicle.append(value.get_min().get_type_of_vehicle())
+                    pathes[key].line = pathes[min_state].line.copy()
+                    pathes[key].line.append(value.get_min().get_line())
 
                     
         print(pathes[destiny].value, end=":\n")
+        print(self.calc_arrive_time(pathes[destiny]))
         print(pathes[destiny].direction[0], end=" -> ")
 
         for i in range(1, len(pathes[destiny].direction)):
@@ -174,7 +190,8 @@ class Tehran:
         visited = []
 
         pathes[src].value = 0
-        pathes[src].direction.append(src)
+        # pathes[src].direction.append(src)  #check later!!!!!!! mirdamad is in every node!
+
 
         for i in range(0, len(self.graph)):
             min = self.find_minimum(pathes, visited)
@@ -182,14 +199,20 @@ class Tehran:
             visited.append(min)
         
         print(pathes[destiny].value)
+        print(self.calc_arrive_time(pathes[destiny]))
         print(pathes[destiny].direction[0], end=' -> ')
 
         for i in range(1, len(pathes[destiny].direction)):
             print('(',pathes[destiny].type_vehicle[i - 1], ')', pathes[destiny].direction[i], end=' -> ')
+
+        # print(len(pathes[destiny].direction))
+        # print(len(pathes[destiny].type_vehicle))
+        # for i in pathes[destiny].direction:
+        #     print(i)
         
 
     
-    def set_price_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited):
+    def set_price_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited) -> None:
         
         for line, value in vehicles.items():
             for Vehicle in value:
@@ -257,9 +280,22 @@ class Tehran:
                         list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
                         list[self.lines[line][i - 1]].line = copy(resault.line)
     
-    def find_best_cost()
+    def find_best_time(self, src, destiny):
+        pathes = mymap(lambda: node())
+        visited = []
+        
+        pathes[src].value = 0
+        pathes[src].direction.append(src)
+        time = Time("10:00")
+
+        for i in range(0, len(self.graph)):
+            min = self.find_minimum(pathes, visited)
+            self.set_time_in_stations(self.station_info[min], min, pathes, visited, time)
+            visited.append(min)
+        
+        print(pathes[destiny].value)
     
-    def set_time_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited, start_time: Time):
+    def set_time_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited, start_time: Time) -> None:
         
         for line, value in vehicles.items():
             for Vehicle in value:
@@ -284,19 +320,20 @@ class Tehran:
                         elif list[src].line[-1] != line:
                             flag = 1
 
-                    temp = Time(start_time)
-                    temp.__add__(resault.value) 
+                    temp = copy(start_time)
+                    temp.__add__(resault.value)
+                    # print("src: ", self.lines[line][i], " -> ", self.lines[line][i + 1] ) 
                     resault.value += self.graph[self.lines[line][i]][self.lines[line][i + 1]].calc_time(Vehicle, flag, temp)
                     resault.direction.append(self.lines[line][i + 1])
                     resault.type_vehicle.append(Vehicle)
                     resault.line.append(line)
                     flag = 0
 
-                    if list[self.lines[line][i - 1]].value >= resault.value:
-                        list[self.lines[line][i - 1]].value = copy(resault.value)
-                        list[self.lines[line][i - 1]].direction = copy(resault.direction)
-                        list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
-                        list[self.lines[line][i - 1]].line = copy(resault.line)
+                    if list[self.lines[line][i + 1]].value >= resault.value:
+                        list[self.lines[line][i + 1]].value = copy(resault.value)
+                        list[self.lines[line][i + 1]].direction = copy(resault.direction)
+                        list[self.lines[line][i + 1]].type_vehicle = copy(resault.type_vehicle)
+                        list[self.lines[line][i + 1]].line = copy(resault.line)
 
 
                 resault.value = copy(list[src].value)
@@ -317,9 +354,9 @@ class Tehran:
                             elif list[src].line[-1] != line:
                                 flag = 1
 
-                    temp = Time()
+                    temp = copy(start_time)
                     temp.__add__(resault.value)
-                    resault.value += self.graph[self.lines[line][i]][self.lines[line][i - 1]].calc_price(Vehicle, flag, temp)
+                    resault.value += self.graph[self.lines[line][i]][self.lines[line][i - 1]].calc_time(Vehicle, flag, temp)
                     resault.direction.append(self.lines[line][i - 1])
                     resault.type_vehicle.append(Vehicle)
                     resault.line.append(line)
@@ -330,6 +367,48 @@ class Tehran:
                         list[self.lines[line][i - 1]].direction = copy(resault.direction)
                         list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
                         list[self.lines[line][i - 1]].line = copy(resault.line)
+    
+    def calc_arrive_time(self, destiny: node) -> int:
+        minute: int = 0
+        b = 15
+        t = 5
+        m = 8
+        time = Time("10:00")
+        flag: bool = 1
+        
+        for i in range(0, len(destiny.direction) - 1):
+
+            if i == 0 or (destiny.type_vehicle[i] != destiny.type_vehicle[i - 1]) or (destiny.line[i] != destiny.line[i - 1]):
+                flag = 1
+
+            minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].calc_time(destiny.type_vehicle[i], flag, time)
+            flag = 0
+            # print(minute)
+            #     if destiny.type_vehicle[i] == 'bus':
+            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() *(4) + b
+            #     elif destiny.type_vehicle[i] == 'metro':
+            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() + m
+            #     elif destiny.type_vehicle[i] == 'taxi':
+            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() *(2) + t
+
+            #     flag = 0
+
+            # else:
+            #     if (destiny.type_vehicle[i] != destiny.type_vehicle[i - 1]) and destiny.type_vehicle[i] == 'bus':
+            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value()*(4) + b
+
+            #     elif (destiny.type_vehicle[i] != destiny.type_vehicle[i - 1]) and destiny.type_vehicle[i] == 'metro':
+            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() + m
+
+            #     elif destiny.type_vehicle[i] == 'metro':
+            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value()
+                
+            #     elif destiny.type_vehicle[i] == 'bus':
+            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() *(4)
+
+        
+        return minute
+
                     
 
 
@@ -338,7 +417,21 @@ class Tehran:
 tehran = Tehran()
 src = input()
 destiny = input()
+tehran.find_shortest_path(src, destiny)
+print("\n*************\n")
 tehran.find_best_cost(src, destiny)
+# print("\n*************\n")
+# tehran.find_best_time(src, destiny)
+# print(tehran.graph["Mirdamad"]["Meydan-e Hazrat-e ValiAsr"].get_min())
+                        
+# def func(a, b):
+#     print(a+b+c)
+
+# def func(a, b, c):
+#     print(a, b, c)
+
+# func(2,3)
+
 
 
 
