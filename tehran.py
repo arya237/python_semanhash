@@ -152,7 +152,7 @@ class Tehran:
                 self.graph[start][destination].append(Vehicle1)
                 self.graph[destination][start].append(Vehicle1)
         
-    def find_shortest_path(self, start: str, destiny: str) -> None:
+    def find_shortest_path(self, start: str, destiny: str, start_time: Time) -> None:
         pathes = mymap(lambda: node())
         visited: list[str] = []
         
@@ -178,20 +178,19 @@ class Tehran:
 
                     
         print(pathes[destiny].value, end=":\n")
-        print(self.calc_arrive_time(pathes[destiny]))
+        self.calc_arrive_time(pathes[destiny], copy(start_time)).print()
         print(pathes[destiny].direction[0], end=" -> ")
 
         for i in range(1, len(pathes[destiny].direction)):
             print(" ( " ,pathes[destiny].type_vehicle[i - 1], " ) ", pathes[destiny].direction[i], end=" -> ")
 
     
-    def find_best_cost(self, src: str, destiny: str):
+    def find_best_cost(self, src: str, destiny: str, start_time: Time):
         pathes = mymap(lambda: node())
         visited = []
 
         pathes[src].value = 0
         # pathes[src].direction.append(src)  #check later!!!!!!! mirdamad is in every node!
-
 
         for i in range(0, len(self.graph)):
             min = self.find_minimum(pathes, visited)
@@ -199,18 +198,12 @@ class Tehran:
             visited.append(min)
         
         print(pathes[destiny].value)
-        print(self.calc_arrive_time(pathes[destiny]))
+        self.calc_arrive_time(pathes[destiny], copy(start_time)).print()
         print(pathes[destiny].direction[0], end=' -> ')
 
         for i in range(1, len(pathes[destiny].direction)):
             print('(',pathes[destiny].type_vehicle[i - 1], ')', pathes[destiny].direction[i], end=' -> ')
-
-        # print(len(pathes[destiny].direction))
-        # print(len(pathes[destiny].type_vehicle))
-        # for i in pathes[destiny].direction:
-        #     print(i)
         
-
     
     def set_price_in_stations(self, vehicles: mymap, src: str, list: mymap[str, node], visited) -> None:
         
@@ -322,7 +315,7 @@ class Tehran:
 
                     temp = copy(start_time)
                     temp.__add__(resault.value)
-                    # print("src: ", self.lines[line][i], " -> ", self.lines[line][i + 1] ) 
+                    
                     resault.value += self.graph[self.lines[line][i]][self.lines[line][i + 1]].calc_time(Vehicle, flag, temp)
                     resault.direction.append(self.lines[line][i + 1])
                     resault.type_vehicle.append(Vehicle)
@@ -368,12 +361,12 @@ class Tehran:
                         list[self.lines[line][i - 1]].type_vehicle = copy(resault.type_vehicle)
                         list[self.lines[line][i - 1]].line = copy(resault.line)
     
-    def calc_arrive_time(self, destiny: node) -> int:
+    def calc_arrive_time(self, destiny: node, start_time: Time) -> Time:
         minute: int = 0
+        time = copy(start_time)
         b = 15
         t = 5
         m = 8
-        time = Time("10:00")
         flag: bool = 1
         
         for i in range(0, len(destiny.direction) - 1):
@@ -381,33 +374,12 @@ class Tehran:
             if i == 0 or (destiny.type_vehicle[i] != destiny.type_vehicle[i - 1]) or (destiny.line[i] != destiny.line[i - 1]):
                 flag = 1
 
-            minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].calc_time(destiny.type_vehicle[i], flag, time)
+            time + self.graph[destiny.direction[i]][destiny.direction[i + 1]].calc_time(destiny.type_vehicle[i], flag, time)
             flag = 0
-            # print(minute)
-            #     if destiny.type_vehicle[i] == 'bus':
-            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() *(4) + b
-            #     elif destiny.type_vehicle[i] == 'metro':
-            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() + m
-            #     elif destiny.type_vehicle[i] == 'taxi':
-            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() *(2) + t
 
-            #     flag = 0
 
-            # else:
-            #     if (destiny.type_vehicle[i] != destiny.type_vehicle[i - 1]) and destiny.type_vehicle[i] == 'bus':
-            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value()*(4) + b
 
-            #     elif (destiny.type_vehicle[i] != destiny.type_vehicle[i - 1]) and destiny.type_vehicle[i] == 'metro':
-            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() + m
-
-            #     elif destiny.type_vehicle[i] == 'metro':
-            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value()
-                
-            #     elif destiny.type_vehicle[i] == 'bus':
-            #         minute += self.graph[destiny.direction[i]][destiny.direction[i + 1]].get_vic(destiny.type_vehicle[i]).get_value() *(4)
-
-        
-        return minute
+        return time
 
                     
 
@@ -417,11 +389,12 @@ class Tehran:
 tehran = Tehran()
 src = input()
 destiny = input()
-tehran.find_shortest_path(src, destiny)
+start_time = Time(input()) 
+tehran.find_shortest_path(src, destiny, start_time)
 print("\n*************\n")
-tehran.find_best_cost(src, destiny)
+tehran.find_best_cost(src, destiny, start_time)
 # print("\n*************\n")
-# tehran.find_best_time(src, destiny)
+# tehran.find_best_time(src, destiny, start_time)
 # print(tehran.graph["Mirdamad"]["Meydan-e Hazrat-e ValiAsr"].get_min())
                         
 # def func(a, b):

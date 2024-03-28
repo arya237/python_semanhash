@@ -10,11 +10,11 @@ class Time:
     
     def __add__(self, minute) -> None:
         self.min += minute
-        self.hour += int(minute / 60)
+        self.hour += int(self.min / 60)
         self.hour %= 24
         self.min %= 60
     
     def print(self) -> None:
-        print(self.hour, ":" , self.min)
+        print(int(self.hour), ":" , int(self.min), sep="")
 
    
